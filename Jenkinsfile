@@ -3,6 +3,7 @@ pipeline {
   environment {
     registry = "radhikasinghkirar/playjenkins"
     dockerImage = ""
+    KUBECONFIG = credentials('kubeconfigmaster')
   }
 
   agent any
@@ -36,7 +37,7 @@ pipeline {
     stage('Deploy App') {
       steps {
         script {
-          kubernetesDeploy(configs: "myweb.yaml", kubeconfigId: "kubermaster")
+          sh "kubectl --kubeconfig=$KUBECONFIG apply -f myweb.yaml"
         }
       }
     }
