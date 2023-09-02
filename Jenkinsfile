@@ -1,8 +1,10 @@
 pipeline {
 
   environment {
+    imagename = "radhikasinghkirar/playjenkins"
+    registryCredential = 'dockerhub'
+    dockerImage = ''
     registry = "radhikasinghkirar/playjenkins"
-    dockerImage = ""
     KUBECONFIG = credentials('kubeconfigmaster')
   }
 
@@ -10,16 +12,17 @@ pipeline {
 
   stages {
 
-    stage('Checkout Source') {
+    stage('Cloning Git') {
       steps {
-        git 'https://github.com/radhikasingh0289/playjenkins.git'
+        git([url: 'https://github.com/radhikasingh0289/playjenkins.git', branch: 'master', credentialsId: 'githubaccesstoken'])
+ 
       }
     }
 
-    stage('Build image') {
+   stage('Building image') {
       steps{
         script {
-          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+          dockerImage = docker.build imagename
         }
       }
     }
@@ -27,8 +30,9 @@ pipeline {
     stage('Push Image') {
       steps{
         script {
-          docker.withRegistry( "" ) {
-            dockerImage.push()
+          docker.withRegistry( '', registryCredential ) {
+            dockerImage.push("$BUILD_NUMBER")
+             dockerImage.push('latest')
           }
         }
       }
